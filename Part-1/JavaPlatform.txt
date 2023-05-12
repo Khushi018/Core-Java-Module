@@ -1,0 +1,42 @@
+Q1.Why Java is so popular?
+
+there are two main reasons:-
+1.Object Oriented language
+2.Platform Independence
+
+Q2.What is platform independence?
+Platform Independence is also called build once, run anywhere. Java is one of 
+the most popular platform independent languages. Once we compile a java program 
+and build a jar, we can run the jar (compiledjava program) in any Operating 
+System - where a JVM is installed.Java achieves Platform Independence in a 
+beautiful way. On compiling a java file the output is a class file- which 
+contains an internal java representation called bytecode. 
+
+JVM converts bytecode to executable instructions. The executable instructions 
+are different in different operating systems. So, there aredifferent JVM's 
+for different operating systems. A JVM for windows is different from a JVM 
+for mac.However, both the JVM's understand the bytecode and convert it to the 
+executable code for therespective operating system.
+
+Q3.What is bytecode?
+Java bytecode is the instruction set of the Java virtual machine. Each bytecode is
+composed of one, or in some cases two bytes that represent the instruction (opcode),
+along with zero or more bytes for passing parameters.
+
+Q4.What is JDK JVM JRE ?
+1. JVM 
+a. Virtual machine that run the Java bytecode.
+b. Makes java portable.
+
+2. JRE
+JVM + Libraries + Other Components 
+(to run applets and other java applications)12 Java Interview Questions and 
+
+3. JDK
+JRE + Compilers + Debuggers
+
+Q5.What is role of class loader?
+The Java Class Loader is a part of the Java Runtime Environment that dynamically
+ loads Java classes into the Java Virtual Machine. Usually classes are only loaded
+ on demand. The Java run time system does not need to know about files and file
+ systems as this is delegated to the class loader.
