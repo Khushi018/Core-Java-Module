@@ -1,0 +1,234 @@
+Q1.What is the need for Threads in Java?
+Threads allow Java code to run in parallel. Let’s look at an example to understand what we can do with
+Threads.
+
+Need for Threads
+We are creating a Cricket Statistics Application. Let's say the steps involved 
+in the application are
+
+• STEP I: Download and Store Bowling Statistics => 60 Minutes
+• STEP II: Download and Store Batting Statistics => 60 Minutes
+• STEP III: Download and Store Fielding Statistics => 15 Minutes
+• STEP IV: Merge and Analyze => 25 Minutes
+
+Steps I, II and III are independent and can be run in parallel to each other. 
+Run individually this program takes 160 minutes. We would want to run this 
+program in lesser time. Threads can be a solution to this problem. Threads 
+allow us to run STEP I, II and III in parallel and run Step IV when all Steps I,
+II and III are completed.
+
+Below example shows the way we would write code usually – without using Threads.
+
+ThreadExamples example = new ThreadExamples();
+example.downloadAndStoreBattingStatistics();
+example.downloadAndStoreBowlingStatistics();
+example.downloadAndStoreFieldingStatistics();
+
+example.mergeAndAnalyze();
+
+downloadAndStoreBowlingStatistics starts only after downloadAndStoreBattingStatistics 
+completes execution. downloadAndStoreFieldingStatistics starts only after 
+downloadAndStoreBowlingStatistics completes execution. What if I want to run 
+them in parallel without waiting for the others to complete?
+
+This is where Threads come into picture. Using Multi-Threading we can run each 
+of the above steps in parallel and synchronize when needed. We will understand 
+more about synchronization later.
+
+Q2.How do you create a thread?
+Creating a Thread class in Java can be done in two ways.
+1.Extending Thread class 
+2.and implementing Runnable interface.
+Let’s create the BattingStatisticsThread 
+extending Thread class and BowlingStatisticsThread implementing Runnable 
+interface.
+
+Q3.How do you create a thread by extending Thread class?
+Thread class can be created by extending Thread class and implementing the 
+public void run() method.
+
+class BattingStatisticsThread extends Thread {
+		//run method without parameters
+		public void run() {
+			for (int i = 0; i < 1000; i++)
+			System.out.println("Running Batting Statistics Thread "+ i);
+		}
+}
+
+
+
+Q4.How do you create a thread by implementing Runnable interface?
+Thread class can also be created by implementing Runnable interface and implementing 
+the method declared in Runnable interface “public void run()”. Example below 
+shows the Batting Statistics Thread implemented by implementing Runnable 
+interface.
+
+class BowlingStatisticsThread implements Runnable {
+		//run method without parameters
+		public void run() {
+			for (int i = 0; i < 1000; i++)
+			System.out.println("Running Bowling Statistics Thread "+ i);
+		}
+}
+
+
+Q5.How do you run a Thread in Java?
+Running a Thread in Java is slightly different based on the approach used to 
+create the thread.
+
+Thread created Extending Thread class
+When using inheritance, An object of the thread needs be created and start() 
+method on the thread needs to be called. Remember that the method that needs to 
+be called is not run() but it is start().
+
+BattingStatisticsThread battingThread1 = new BattingStatisticsThread();
+battingThread1.start();
+
+Thread created implementing RunnableInterface.
+Three steps involved.
+	• Create an object of the BowlingStatisticsThread(class implementing Runnable).
+	• Create a Thread object with the earlier object as constructor argument.
+	• Call the start method on the thread.
+
+BowlingStatisticsThread battingInterfaceImpl = new BowlingStatisticsThread();
+Thread battingThread2 = new Thread(battingInterfaceImpl);
+battingThread2.start();
+
+
+Q6.What are the different states of a Thread?
+Different states that a thread can be in are defined the class State.
+	• NEW;
+	• RUNNABLE;
+	• RUNNING;
+	• BLOCKED/WAITING;
+	• TERMINATED/DEAD;
+
+Let’s consider the example that we discussed earlier.
+
+Example Program
+LINE 1: BattingStatisticsThread battingThread1 = new BattingStatisticsThread();
+LINE 2: battingThread1.start();
+
+LINE 3: BowlingStatisticsThread battingInterfaceImpl = new BowlingStatisticsThread();
+LINE 4: Thread battingThread2 = new Thread(battingInterfaceImpl);
+LINE 5:battingThread2.start();
+
+Description
+A thread is in NEW state when an object of the thread is created but the start method is not yet called.
+At the end of line 1, battingThread1 is in NEW state.
+
+A thread is in RUNNABLE state when it is eligible to run, but not running yet. 
+(A number of Threads can be in RUNNABLE state. Scheduler selects which Thread 
+to move to RUNNING state). In the above example, sometimes the Batting Statistics 
+thread is running and at other time, the Bowling Statistics Thread is running. 
+
+When Batting Statistics thread is Running, the Bowling Statistics thread is 
+ready to run. It’s just that the scheduler picked Batting Statistics thread to 
+run at that instance and vice-versa. When Batting Statistics thread is Running, 
+the Bowling Statistics Thread is in Runnable state (Note that the Bowling Statistics Thread is not waiting for anything except for
+the Scheduler to pick it up and run it).
+
+A thread is RUNNING state when it’s the one that is currently , what else to say, Running.
+
+A thread is in BLOCKED/WAITING/SLEEPING state when it is not eligible to be run 
+by the Scheduler. Thread is alive but is waiting for something. An example can 
+be a Synchronized block. If Thread1 enters synchronized block, it blocks all 
+the other threads from entering synchronized code on the same instance or class. All other threads are said to be in Blocked state.
+
+A thread is in DEAD/TERMINATED state when it has completed its execution. Once a
+thread enters dead state, it cannot be made active again.
+
+Q7.What is priority of a thread? How do you change the priority of a thread?
+Scheduler can be requested to allot more CPU to a thread by increasing the threads 
+priority. Each thread in Java is assigned a default Priority 5. This priority 
+can be increased or decreased (Range 1 to 10). If two threads are waiting, the 
+scheduler picks the thread with highest priority to be run. If all threads
+have equal priority, the scheduler then picks one of them randomly. Design 
+programs so that they don't depend on priority.
+
+
+Thread Priority Example
+Consider the thread example declared below:
+
+class ThreadExample extends Thread {
+		public void run() {
+				for (int i = 0; i < 1000; i++)
+				System.out.println( this.getName() + " Running "+ i);
+		}
+}
+
+Priority of thread can be changed by invoking setPriority method on the thread.
+
+ThreadExample thread1 = new ThreadExample();
+thread1.setPriority(8);
+
+Java also provides predefined constants Thread.MAX_PRIORITY(10), Thread.MIN_PRIORITY(1),
+Thread.NORM_PRIORITY(5) which can be used to assign priority to a thread.
+
+
+Q8.What is ExecutorService?
+The java.util.concurrent.ExecutorService interface is a new way of executing 
+tasks asynchronously in the background. An ExecutorService is very similar to a 
+thread pool.
+
+Below example shows how to create an Executor Service and use it to run a task 
+implementing the Runnable interface.
+
+ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+executorService.execute(new Runnable() {
+			public void run() {
+					System.out .println("From ExecutorService");
+			}
+});
+
+System.out .println("End of Main");
+
+executorService.shutdown();
+
+There are three ways of creating executor services.
+Below example shows the three different ways.
+1.executorService1 can execute one task at a time.
+2.executorService2 can execute 10 tasks at a time. 
+3.executorService3 can execute tasks after certain delay or periodically.
+
+// Creates an Executor that uses a single worker thread operating off an
+// unbounded queue.
+ExecutorService executorService1 = Executors.newSingleThreadExecutor();
+
+// Creates a thread pool that reuses a fixed number of threads
+// operating off a shared unbounded queue. At any point, the parameter
+// specifies the most threads that will be active processing tasks.
+ExecutorService executorService2 = Executors.newFixedThreadPool(10);
+
+// Creates a thread pool that can schedule commands to run after a
+// given delay, or to execute periodically.
+ExecutorService executorService3 = Executors.newScheduledThreadPool(10);
+
+How do you check whether an ExecutionService task executed successfully?
+We can use a Future to check the return value. Below example shows how it can be
+done. Future get method would return null if the task finished successfully.
+
+Future future = executorService1.submit(new Runnable() {
+		public void run() {
+			System.out .println("From executorService1");
+		}
+});
+
+future.get(); // returns null if the task has finished correctly.
+
+
+Q9.What is Callable? How do you execute a Callable from ExecutionService?
+Runnable interface's run method has a return type void. So, it cannot return any 
+result from executing a task. However, a Callable interface's call method has a 
+return type. If you have multiple return values possible from a task, we can use
+the Callable interface. Example shows how to create a Callable interface and 
+execute it using an executor service. The return value is printed to the output.
+
+			Future futureFromCallable = executorService1.submit(new Callable() {
+					public String call() throws Exception {
+						return "RESULT";
+					}
+			});
+
+System.out .println("futureFromCallable.get() = "+ futureFromCallable.get());

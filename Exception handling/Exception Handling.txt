@@ -1,0 +1,557 @@
+*Why is Exception Handling important?*
+
+```jsx
+Most applications are large and complex. I’ve not seen an application without 
+defects in my 15 year experience. It is not that bad programmers create defects.
+Even good programmers write code that has defects and throws exceptions. 
+There are two things that are important when exceptions are thrown.
+
+• A friendly message to the user : You do not want a windows blue screen. When 
+something goes wrong and an exception occurs, it would be great to let the user 
+know that something went wrong and tech support has been notified. Additional 
+thing we can do is to give the user a unique exception identifier and 
+information on how to reach the tech support.
+
+• Enough Information for the Support Team/Support Developer to debug the problem
+ : When writing code, always think about what information would I need to debug 
+ a problem in this piece of code. Make sure that information is made available, 
+ mostly in the logs, if there are exceptions. It would be great to tie the 
+ information with the unique exception identifier given to the user.
+```
+
+*What design pattern is used to implement Exception handling Features in*
+*most languages?*
+
+```jsx
+When an exception is thrown from a method with no exception handling, it is thrown to the calling
+method. If there is no exception handling in that method too, it is further thrown up to its calling
+method and so on. This happens until an appropriate exception handler is found.This is an example of
+Chain of Responsibility Pattern defined as “a way of passing a request between a chain of objects”.
+
+A good real time example is the Loan or Leave Approval Process. When a loan approval is needed, it first
+goes to the clerk. If he cannot handle it (large amount), it goes to his manager and so on until it is
+approved or rejected.
+
+public static void main(String[] args) {
+				method1();
+}
+
+private static void method1() {
+			method2();
+}
+
+private static void method2() {
+			String str = null;
+			str.toString();
+}
+
+**Program Output**
+Exception in thread "main" java.lang.NullPointerException at
+com.rithus.exceptionhandling.ExceptionHandlingExample1.method2(ExceptionHandlingExample1.java:1
+5)
+at
+com.rithus.exceptionhandling.ExceptionHandlingExample1.method1(ExceptionHandlingExample1.java:1
+0)
+at com.rithus.exceptionhandling.ExceptionHandlingExample1.main(ExceptionHandlingExample1.java:6)
+Look at the stack trace. Exception which is thrown in method2 is propagating to method1 and then to
+main. This is because there is no exception handling in all 3 methods - main, method1 and method2
+```
+
+*What is the need for finally block?*
+
+```jsx
+Consider the example below: In method2, a connection is opened. However, because of the exception
+thrown, connection is not closed. This results in unclosed connections.
+
+package com.rithus.exceptionhandling;
+
+class Connection {
+		void open() {
+				System.out.println("Connection Opened");
+		}
+		void close() {
+				System.out.println("Connection Closed");
+		}
+}
+
+public class ExceptionHandlingExample1 {
+		// Exception Handling Example 1
+		// Let's add a try catch block in method2
+		public static void main(String[] args) {
+				method1();
+				System.out.println("Line after Exception - Main");
+		}
+
+		private static void method1() {
+				method2();
+				System.out.println("Line after Exception - Method 1");
+		}
+
+		private static void method2() {
+				try {
+					Connection connection = new Connection();
+					connection.open();
+					// LOGIC
+					String str = null;
+					str.toString();
+					connection.close();
+			} catch (Exception e) {
+					// NOT PRINTING EXCEPTION TRACE- BAD PRACTICE
+					System.out.println("Exception Handled - Method 2");
+		}
+	}
+}
+
+**Output**
+Connection Opened
+Exception Handled - Method 2
+Line after Exception - Method 1
+Line after Exception - Main
+
+Connection that is opened is not closed. Because an exception has occurred in method2,
+connection.close() is not run. This results in a dangling (un-closed) connection.
+
+**Code with Finally**
+Finally block is used when code needs to be executed irrespective of whether an exception is thrown. Let
+us now move connection.close(); into a finally block. Also connection declaration is moved out of the try
+block to make it visible in the finally block.
+
+private static void method2() {
+		Connection connection = new Connection();
+		connection.open();
+		try {
+			// LOGIC
+			String str = null;
+			str.toString();
+
+		} catch (Exception e) {
+				// NOT PRINTING EXCEPTION TRACE - BAD PRACTICE
+				System.out.println("Exception Handled - Method 2");
+		} finally {
+		connection.close();
+		}
+}
+
+**Output**
+Connection Opened
+Exception Handled - Method 2
+Connection Closed
+Line after Exception - Method 1
+Line after Exception - Main
+
+Connection is closed even when exception is thrown. This is because connection.close() is called in the
+finally block.
+
+Finally block is always executed (even when an exception is thrown). So, if we want some code to be
+always executed we can move it to finally block.
+
+```
+
+*In what scenarios is code in finally not executed?*
+
+```jsx
+Code in finally is NOT executed only in two situations.
+If exception is thrown in finally.
+If JVM Crashes in between (for example, System.exit()).
+```
+
+*Will finally be executed in the program below?*
+
+```jsx
+private static void method2() {
+			Connection connection = new Connection();
+			connection.open();
+			try {
+					// LOGIC
+					String str = null;
+					str.toString();
+					return;
+			} catch (Exception e) {
+					// NOT PRINTING EXCEPTION TRACE - BAD PRACTICE
+					System.out.println("Exception Handled - Method 2");
+					return;
+			} finally {
+					connection.close();
+			}
+}
+
+Yes. It will be. Finally will be executed even when there is a return statement in try or catch.
+```
+
+*Is try without a catch is allowed?*
+
+```jsx
+Yes. It is.
+
+private static void method2() {
+
+	Connection connection = new Connection();
+	connection.open();
+	try {
+			// LOGIC
+			String str = null;
+			str.toString();
+	} finally {
+			connection.close();
+	}
+}
+
+Output:
+Connection Opened
+Connection Closed
+Exception in thread "main" java.lang.NullPointerException at
+com.rithus.exceptionhandling.ExceptionHandlingExample1.method2(ExceptionHandlingExample1.java:3
+3) at
+com.rithus.exceptionhandling.ExceptionHandlingExample1.method1(ExceptionHandlingExample1.java:2
+2) at
+com.rithus.exceptionhandling.ExceptionHandlingExample1.main(ExceptionHandlingExample1.java:17)
+Try without a catch is useful when you would want to do something (close a connection) even if an
+exception occurred without handling the exception.
+```
+
+*Is try without catch and finally allowed?*
+
+```jsx
+No. Below method would give a Compilation Error!! (End of try block)
+
+private static void method2() {
+		Connection connection = new Connection();
+		connection.open();
+		try {
+				// LOGIC
+				String str = null;
+				str.toString();
+		}//COMPILER ERROR!!
+}
+```
+
+*Can you explain the hierarchy of Exception Handling classes?*
+
+```jsx
+Throwable is the highest level of Error Handling classes.
+
+Below class definitions show the pre-defined exception hierarchy in Java.
+
+//Pre-defined Java Classes
+class Error extends Throwable{}
+class Exception extends Throwable{}
+class RuntimeException extends Exception{}
+
+Below class definitions show creation of a programmer defined exception in Java.
+//Programmer defined classes
+class CheckedException1 extends Exception{}
+class CheckedException2 extends CheckedException1{}
+
+class UnCheckedException extends RuntimeException{}
+class UnCheckedException2 extends UnCheckedException{}
+```
+
+*What is the difference between Error and Exception?*
+
+```jsx
+**Error**
+Error is used in situations when there is nothing a programmer can do about an error. 
+Ex: StackOverflowError, OutOfMemoryError.
+
+**Exception**
+Exception is used when a programmer can handle the exception.
+```
+
+*What is the difference between Checked Exceptions and Unchecked*
+*Exceptions?*
+
+```jsx
+**Un-Checked Exception**
+RuntimeException and classes that extend RuntimeException are called unchecked 
+exceptions. 
+For Example: RuntimeException,UnCheckedException,UnCheckedException2 are 
+unchecked or RunTime Exceptions. There are subclasses of RuntimeException 
+(which means they are subclasses of Exception also.)
+
+**Checked Exception**
+Other Exception Classes (which don’t fit the earlier definition). These are also called Checked Exceptions.
+Exception, CheckedException1,CheckedException2 are checked exceptions. They are subclasses of
+Exception which are not subclasses of RuntimeException.
+```
+
+*How do you throw an exception from a method?*
+
+```jsx
+Method addAmounts in Class AmountAdder adds amounts. If amounts are of different currencies it
+throws an exception.
+
+class Amount {
+		public Amount(String currency, int amount) {
+			this.currency = currency;
+			this.amount = amount;
+		}
+		String currency;// Should be an Enum
+		int amount;// Should ideally use BigDecimal
+}
+
+// AmountAdder class has method addAmounts which is throwing a RuntimeException
+class AmountAdder {
+		static Amount addAmounts(Amount amount1, Amount amount2) {
+				if (!amount1.currency.equals(amount2.currency)) {
+						throw new RuntimeException("Currencies don't match");
+				}
+				return new Amount(amount1.currency, amount1.amount + amount2.amount);
+		}
+}
+
+public class ExceptionHandlingExample2 {
+		public static void main(String[] args) {
+				AmountAdder.addAmounts(new Amount("RUPEE", 5), new Amount("DOLLAR", 5));
+		}
+}
+
+**Output**
+Exception in thread "main" java.lang.RuntimeException: Currencies don't match
+at com.rithus.exceptionhandling.AmountAdder.addAmounts(ExceptionHandlingExample2.java:17)
+at com.rithus.exceptionhandling.ExceptionHandlingExample2.main(ExceptionHandlingExample2.java:28)
+
+Exception message shows the type of exception(java.lang.RuntimeException) and the string message
+passed to the RuntimeException constructor("Currencies don't match");
+```
+
+*What happens when you throw a Checked Exception from a method ?*
+
+```jsx
+Let us now try to change the method addAmounts to throw an Exception instead of RuntimeException. It
+gives us a compilation error.
+
+class AmountAdder {
+		static Amount addAmounts(Amount amount1, Amount amount2) {
+				if (!amount1.currency.equals(amount2.currency)) {
+						throw new Exception("Currencies don't match");// COMPILER ERROR!
+// Unhandled exception type Exception
+				}
+				return new Amount(amount1.currency, amount1.amount + amount2.amount);
+		}
+}
+```
+
+*What are the options you have to eliminate compilation errors when handling*
+*checked exceptions?*
+
+```jsx
+All classes that are not RuntimeException or subclasses of RuntimeException but extend Exception are
+called CheckedExceptions. The rule for CheckedExceptions is that they should either be handled or
+thrown. Handled means it should be completed handled - i.e. not throw out of the method. Thrown
+means the method should declare that it throws the exception
+
+**Option 1 : Declaring that a method would throw an exception**
+Let's look at how to declare throwing an exception from a method.
+
+class AmountAdder {
+		static Amount addAmounts(Amount amount1, Amount amount2) throws Exception {
+				if (!amount1.currency.equals(amount2.currency)) {
+						throw new Exception("Currencies don't match");
+				}
+				return new Amount(amount1.currency, amount1.amount + amount2.amount);
+		}
+}
+
+Look at the line "static Amount addAmounts(Amount amount1, Amount amount2) throws Exception". This
+is how we declare that a method throws Exception. This results in compilation error in main method. This
+is because Main method is calling a method which is declaring that it might throw Exception. Main method
+again has two options a. Throw b. Handle
+
+Code with main method throwing the exception below
+
+public static void main(String[] args) throws Exception {
+		AmountAdder.addAmounts(new Amount("RUPEE", 5), new Amount("DOLLAR", 5));
+}
+
+**Output**
+Exception in thread "main" java.lang.Exception: Currencies don't match
+at com.rithus.exceptionhandling.AmountAdder.addAmounts(ExceptionHandlingExample2.java:17)
+at com.rithus.exceptionhandling.ExceptionHandlingExample2.main(ExceptionHandlingExample2.java:28)
+
+**Option 2 : Handling the Check Exception with a try catch block**
+main can also handle the exception instead of declaring throws. Code for it below.
+
+public static void main(String[] args) {
+		try {
+				AmountAdder.addAmounts(new Amount("RUPEE", 5), new Amount("DOLLAR",5));
+		} catch (Exception e) {
+				System.out.println("Exception Handled in Main");
+		}
+}
+
+**Output**
+Exception Handled in Main
+```
+
+*How do you create a Custom Exception?*
+
+```jsx
+For the scenario above we can create a customized exception, CurrenciesDoNotMatchException. If we
+want to make it a Checked Exception, we can make it extend Exception class. Otherwise, we can extend
+RuntimeException class.
+
+**Option 1 : Extending Exception or subclass of Exception : Creating Checked Exception**
+
+class CurrenciesDoNotMatchException extends Exception{
+}
+
+No we can change the method addAmounts to throw CurrenciesDoNotMatchException - even the
+declaration of the method changed.
+
+class AmountAdder {
+		static Amount addAmounts(Amount amount1, Amount amount2)
+						throws CurrenciesDoNotMatchException {
+				if (!amount1.currency.equals(amount2.currency)) {
+						throw new CurrenciesDoNotMatchException();
+				}
+				return new Amount(amount1.currency, amount1.amount + amount2.amount);
+		}
+}
+
+main method needs to be changed to catch: CurrenciesDoNotMatchException
+
+public class ExceptionHandlingExample2 {
+		public static void main(String[] args) {
+				try {
+						AmountAdder.addAmounts(new Amount("RUPEE", 5), new Amount("DOLLAR",
+										5));
+				} catch (CurrenciesDoNotMatchException e) {
+						System.out.println("Exception Handled in Main" + e.getClass());
+				}
+			}
+	}
+
+Output:
+Exception Handled in Mainclass com.rithus.exceptionhandling.CurrenciesDoNotMatchException
+
+Let’s change main method to handle Exception instead of CurrenciesDoNotMatchException
+
+public class ExceptionHandlingExample2 {
+		public static void main(String[] args) {
+				try {
+						AmountAdder.addAmounts(new Amount("RUPEE", 5), new Amount("DOLLAR",5));
+				} catch (Exception e) {
+						System.out.println("Exception Handled in Main" + e.getClass());
+				}
+		}
+}
+
+**Output:**
+Exception Handled in Mainclass com.rithus.exceptionhandling.CurrenciesDoNotMatchException
+
+There is no change in output from the previous example. This is because Exception catch block can catch
+Exception and all subclasses of Exception.
+
+**Option 2 : Extend RuntimeException**
+
+Let’s change the class CurrenciesDoNotMatchException to extend RuntimeException instead of
+Exception
+
+class CurrenciesDoNotMatchException extends RuntimeException{
+}
+
+Output:
+Exception Handled in Mainclass com.rithus.exceptionhandling.CurrenciesDoNotMatchException
+
+Change methods addAmounts in AmountAdder to remove the declaration " throws
+CurrenciesDoNotMatchException"
+
+No compilation error occurs since RuntimeException and subclasses of RuntimeException are not
+Checked Exception's. So, they don't need to be handled or declared. If you are interested in handling
+them, go ahead and handle them. But, java does not require you to handle them.
+Remove try catch from main method. It is not necessary since CurrenciesDoNotMatchException is now a
+
+RuntimeException.
+public class ExceptionHandlingExample2 {
+		public static void main(String[] args) {
+				AmountAdder.addAmounts(new Amount("RUPEE", 5), new Amount("DOLLAR", 5));
+		}
+}
+
+**Output:**
+Exception in thread "main" com.rithus.exceptionhandling.CurrenciesDoNotMatchException at
+com.rithus.exceptionhandling.AmountAdder.addAmounts(ExceptionHandlingExample2.java:21)
+at com.rithus.exceptionhandling.ExceptionHandlingExample2.main(ExceptionHandlingExample2.java:30)
+
+**What is the output of the program below?**
+
+public static void main(String[] args) {
+		try {
+				AmountAdder.addAmounts(new Amount("RUPEE", 5), new Amount("DOLLAR",
+								5));
+		} catch (Exception e) {
+				System.out.println("Handled Exception");
+		} catch (CurrenciesDoNotMatchException e) {
+				System.out.println("Handled CurrenciesDoNotMatchException");
+		}
+}
+
+Compilation Error. Specific Exception catch blocks should be before the catch block for a Generic
+Exception. For example, CurrenciesDoNotMatchException should be before Exception.
+```
+
+*How do you handle multiple exception types with same exception handling*
+*block?*
+
+```jsx
+This is a new feature in Java 7.
+try {
+...
+} catch( IOException | SQLException ex ) {
+...
+}
+```
+
+*Can you explain about try with resources?*
+
+```jsx
+Consider the example below. When the try block ends the resources are automatically released. We do
+not need to create a separate finally block.
+
+try (BufferedReader br = new BufferedReader(new FileReader("FILE_PATH")))
+{
+				String line;
+				while ((line = br.readLine()) != null) {
+						System.out.println(line);
+				}
+} catch (IOException e) {
+			e.printStackTrace();
+}
+```
+
+*How does try with resources work?*
+
+```jsx
+try-with-resources is available to any class that implements the AutoCloseable interface. In the above
+example BufferedReader implements AutoCloseable interface.
+
+public interface AutoCloseable {
+				void close() throws Exception;
+}
+```
+
+*Can you explain a few Exception Handling Best Practices?*
+
+```jsx
+First of all : In all above examples we have not followed an Exception Handling good practice(s). We
+were trying to give quick examples. So here is a list of best practices.
+
+• Never Hide Exceptions. At the least log them. printStactTrace method prints the entire stack
+trace when an exception occurs. If you handle an exception, it is always a good practice to log
+the trace.
+
+• Do not use exception handling for flow control in a program. They have a significant
+performance impact.
+
+• Think about the user. What does the user want to see if there is an exception?
+
+• Think about the support developer. What does the support developer need to debug the
+exception?
+
+• Think about the calling method. Can the calling method do something about the exception being
+thrown? If not, create un checked exceptions. For example, Spring Framework chooses to make
+most of the jdbc exceptions as unchecked exceptions because , in most cases, there is nothing
+that a caller of the method can do about a jdbc exception.
+
+• Have global exception handling.
+```

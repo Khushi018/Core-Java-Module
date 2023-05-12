@@ -1,0 +1,244 @@
+1.What is Garbage Collection?*
+Garbage Collection is a name given to automatic memory management in Java. Aim of Garbage
+Collection is to Keep as much of heap available (free) for the program as possible. JVM removes objects
+on the heap which no longer have references from the heap.
+
+
+2.Can you explain Garbage Collection with an example?*
+Let’s say the below method is called from a function.
+
+void method(){
+		Calendar calendar = new GregorianCalendar(2000,10,30);
+		System.out.println(calendar);
+}
+An object of the class GregorianCalendar is created on the heap by the first line of the function with one
+reference variable calendar.
+
+After the function ends execution, the reference variable calendar is no longer valid. Hence, there are no
+references to the object created in the method.
+
+JVM recognizes this and removes the object from the heap. This is called Garbage Collection.
+
+
+3.When is Garbage Collection run?
+Garbage Collection runs at the whims and fancies of the JVM (it isn't as bad as that). Possible situations
+when Garbage Collection might run are
+• when available memory on the heap is low
+• when cpu is free
+
+4.What are best practices on Garbage Collection?
+Programmatically, we can request (remember it’s just a request - Not an order) JVM to run Garbage
+Collection by calling 
+System.gc() method.
+
+JVM might throw an OutOfMemoryException when memory is full and no objects on the heap are eligible
+for garbage collection.
+
+finalize() method on the objected is run before the object is removed from the heap from the garbage
+collector. We recommend not to write any code in finalize();
+
+
+5.What are Initialization Blocks?
+Initialization Blocks - Code which runs when an object is created or a class is loaded
+
+There are two types of Initialization Blocks
+**Static Initializer:** Code that runs when a class is loaded.
+**Instance Initializer:** Code that runs when a new object is created.
+
+6.What is a Static Initializer?
+Look at the example below:
+
+public class InitializerExamples {
+static int count;
+int i;
+
+	static{
+			//This is a static initializers. Run only when Class is first loaded.
+			//Only static variables can be accessed
+			System.out.println("Static Initializer");
+			//i = 6;//COMPILER ERROR
+			System.out.println("Count when Static Initializer is run is " + count);
+	}
+
+	public static void main(String[] args) {
+			InitializerExamples example = new InitializerExamples();
+			InitializerExamples example2 = new InitializerExamples();
+			InitializerExamples example3 = new InitializerExamples();
+	}
+}
+Code within static{ and } is called a static initializer. This is run only when class is first loaded. Only static
+variables can be accessed in a static initializer.
+
+**Example Output**
+Static Initializer
+Count when Static Initializer is run is 0
+
+Even though three instances are created static initializer is run only once.
+
+7.What is an Instance Initializer Block?
+Let’s look at an example
+public class InitializerExamples {
+		static int count;
+		Java Interview Questions and Answers – www.in28Minutes.com 67
+		int i;
+		{
+				//This is an instance initializers. Run every time an object is created.
+				//static and instance variables can be accessed
+				System.out.println("Instance Initializer");
+				i = 6;
+				count = count + 1;
+				System.out.println("Count when Instance Initializer is run is " + count);
+		}
+
+		public static void main(String[] args) {
+				InitializerExamples example = new InitializerExamples();
+				InitializerExamples example1 = new InitializerExamples();
+				InitializerExamples example2 = new InitializerExamples();
+		}
+}
+Code within instance initializer is run every time an instance of the class is created.
+
+Example Output
+Instance Initializer
+Count when Instance Initializer is run is 1
+Instance Initializer
+Count when Instance Initializer is run is 2
+Instance Initializer
+Count when Instance Initializer is run is 3
+
+
+8.What is Serialization?
+Serialization helps us to save and retrieve the state of an object.
+• Serialization => Convert object state to some internal object representation.
+• De-Serialization => The reverse. Convert internal representation to object.
+
+**Two important methods**
+• ObjectOutputStream.writeObject() // serialize and write to file
+• ObjectInputStream.readObject() // read from file and deserialize
+
+
+9.How do you serialize an object using Serializable interface?
+To serialize an object it should implement Serializable interface. In the example below, Rectangle class
+implements Serializable interface. Note that Serializable interface does not declare any methods to be
+implemented.
+
+Below example shows how an instance of an object can be serialized. We are creating a
+new Rectangle object and serializing it to a file Rectangle.ser.
+
+class Rectangle implements Serializable {
+		public Rectangle(int length, int breadth) {
+				this.length = length;
+				this.breadth = breadth;
+				area = length * breadth;
+		}
+		int length;
+		int breadth;
+		int area;
+}
+
+FileOutputStream fileStream = new FileOutputStream("Rectangle.ser");
+ObjectOutputStream objectStream = new ObjectOutputStream(fileStream);
+objectStream.writeObject(new Rectangle(5, 6));
+objectStream.close();
+```
+
+10.How do you de-serialize in Java?
+Below example show how a object can be deserialized from a serialized file. A
+rectangle object is deserialized from the file Rectangle.ser
+
+FileInputStream fileInputStream = new FileInputStream("Rectangle.ser");
+ObjectInputStream objectInputStream = new ObjectInputStream(
+fileInputStream);
+Rectangle rectangle = (Rectangle) objectInputStream.readObject();
+objectInputStream.close();
+System.out.println(rectangle.length);// 5
+System.out.println(rectangle.breadth);// 6
+System.out.println(rectangle.area);// 30
+```
+
+11.What do you do if only parts of the object have to be serialized?
+We mark all the properties of the object which should not be serialized as transient. Transient attributes in
+an object are not serialized. Area in the previous example is a calculated value. It is unnecessary to
+serialize and deserialize. We can calculate it when needed. In this situation, we can make the variable
+transient. Transient variables are not serialized. (transient int area;)
+
+//Modified Rectangle class
+class Rectangle implements Serializable {
+		public Rectangle(int length, int breadth) {
+				this.length = length;
+				this.breadth = breadth;
+				area = length * breadth;
+		}
+		int length;
+		int breadth;
+		transient int area;
+}
+
+If you run the program again, you would get following output
+
+System.out.println(rectangle.length);// 5
+System.out.println(rectangle.breadth);// 6
+System.out.println(rectangle.area);// 0
+
+Note that the value of rectangle.area is set to 0. Variable area is marked transient. So, it is not stored into
+the serialized file. And when de-serialization happens area value is set to default value i.e. 0.
+
+
+12.How do you serialize a hierarchy of objects?
+Objects of one class might contain objects of other classes. When serializing and de-serializing, we might
+need to serialize and de-serialize entire object chain. All classes that need to be serialized have to
+implement the Serializable interface. Otherwise, an exception is thrown. Look at the class below. An
+object of class House contains an object of class Wall.
+
+class House implements Serializable {
+		public House(int number) {
+				super();
+				this.number = number;
+		}
+		Wall wall;
+		int number;
+}
+
+class Wall{
+		int length;
+		int breadth;
+		int color;
+}
+
+House implements Serializable. However, Wall doesn't implement Serializable. When we try to serialize
+an instance of House class, we get the following exception.
+
+Output:
+Exception in thread "main" java.io.NotSerializableException:
+com.rithus.serialization.Wall
+at java.io.ObjectOutputStream.writeObject0(Unknown Source)
+at java.io.ObjectOutputStream.defaultWriteFields(Unknown Source)
+
+This is because Wall is not serializable. Two solutions are possible.
+1. Make Wall transient. Wall object will not be serialized. This causes the wall object state to be lost.
+2. Make Wall implement Serializable. Wall object will also be serialized and the state of wall object
+along with the house will be stored.
+
+class House implements Serializable {
+		public House(int number) {
+				super();
+				this.number = number;
+		}
+
+		transient Wall wall;
+		int number;
+}
+
+class Wall implements Serializable {
+		int length;
+		int breadth;
+		int color;
+}
+
+With both these programs, earlier main method would run without throwing an exception.
+
+If you try de-serializing, In Example2, state of wall object is retained whereas in Example1, state of wall
+object is lost.
+
+Are the values of static variables stored when an object is serialized?*
+Static Variables are not part of the object. They are not serialized.
